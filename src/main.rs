@@ -1,11 +1,12 @@
 mod config;
 mod shaders;
+mod utils;
 
 use std::sync::{Arc, Mutex};
 
 use config::get_config;
 use hyprland::event_listener::EventListener;
-use log::debug;
+use log::{debug, info};
 use shaders::shader::{self, Shader};
 
 fn main() -> hyprland::Result<()> {
@@ -15,7 +16,7 @@ fn main() -> hyprland::Result<()> {
 
     // Load config
     let cfg = get_config().unwrap();
-    println!("Config loaded: {:?}", cfg);
+    info!("Config loaded: {:?}", cfg);
 
     let applied_shader = Arc::new(Mutex::new(String::from("")));
 
@@ -25,6 +26,7 @@ fn main() -> hyprland::Result<()> {
         cfg.night_light.start_time,
         cfg.night_light.end_time,
         cfg.night_light.temperature,
+        None,
     );
 
     let vibrance_shaders: Vec<shaders::vibrance::VibranceShader> = cfg
@@ -47,8 +49,8 @@ fn main() -> hyprland::Result<()> {
         for vibrance_shader in &vibrance_shaders {
             if shader::apply_if_should(
                 vibrance_shader,
-                data.window_class.clone(),
-                data.window_title.clone(),
+                Some(data.window_class.clone()),
+                Some(data.window_title.clone()),
                 applied_shader.to_string(),
             )
             .unwrap()
@@ -59,15 +61,13 @@ fn main() -> hyprland::Result<()> {
             }
         }
         if !applied
-            && shader::apply_if_should(
-                &night_light_shader,
-                "".to_string(),
-                "".to_string(),
-                applied_shader.to_string(),
-            )
-            .unwrap()
+            && shader::apply_if_should(&night_light_shader, None, None, applied_shader.to_string())
+                .unwrap()
         {
             *applied_shader = night_light_shader.hash();
+        } else if !applied {
+            shader::remove().unwrap();
+            *applied_shader = "".to_string();
         }
     });
 

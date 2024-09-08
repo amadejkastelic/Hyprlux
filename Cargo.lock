@@ -297,6 +297,7 @@ dependencies = [
  "colog",
  "hyprland",
  "log",
+ "regex",
  "serde",
  "strfmt",
  "toml",

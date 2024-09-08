@@ -1,8 +1,9 @@
-use std::{collections::HashMap, time::SystemTime};
+use std::collections::HashMap;
 
-use chrono::{Local, NaiveTime};
+use chrono::NaiveTime;
 use strfmt::Format;
 
+use super::super::utils::Time;
 use super::shader::Shader;
 
 const SHADER: &str = "
@@ -48,7 +49,8 @@ pub struct NightLightShader {
     enabled: bool,
     start_time: NaiveTime,
     end_time: NaiveTime,
-    temperature: i32,
+    shader_vars: HashMap<String, String>,
+    time_impl: Time,
 }
 
 pub fn new(
@@ -56,30 +58,169 @@ pub fn new(
     start_time: String,
     end_time: String,
     temperature: i32,
+    mock_time: Option<String>,
 ) -> NightLightShader {
+    let time: Time;
+    match mock_time {
+        Some(p) => time = Time::new(Some(NaiveTime::parse_from_str(&p, TIME_FMT).unwrap())),
+        None => time = Time::new(None),
+    }
+
+    let shader_vars = HashMap::from([("temperature".to_string(), temperature.to_string())]);
+
     NightLightShader {
         enabled,
         start_time: NaiveTime::parse_from_str(&start_time, TIME_FMT).unwrap(),
         end_time: NaiveTime::parse_from_str(&end_time, TIME_FMT).unwrap(),
-        temperature,
+        shader_vars,
+        time_impl: time,
     }
 }
 
 impl Shader for NightLightShader {
-    fn should_apply(&self, _: String, _: String) -> bool {
-        let now = Local::now();
-        self.enabled && (now.time() >= self.start_time && now.time() <= self.end_time)
-            || (now.time() < self.start_time && now.time() > self.end_time)
+    fn should_apply(&self, _: Option<String>, _: Option<String>) -> bool {
+        let now = self.time_impl.now();
+
+        if !self.enabled {
+            return false;
+        }
+
+        if self.start_time < self.end_time {
+            return self.start_time <= now && now <= self.end_time;
+        }
+
+        now >= self.start_time || now <= self.end_time
     }
 
     fn get(&self) -> Result<String, Box<dyn std::error::Error>> {
-        let mut vars = HashMap::new();
-        vars.insert("temperature".to_string(), self.temperature);
-
-        Ok(SHADER.format(&vars).unwrap())
+        Ok(SHADER.format(&self.shader_vars).unwrap())
     }
 
     fn hash(&self) -> String {
-        format!("night_{}", self.temperature)
+        format!("night_{}", self.shader_vars["temperature"])
+    }
+}
+
+#[cfg(test)]
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_should_apply() {
+        let shaders = [
+            (
+                new(false, "12:00".to_string(), "14:00".to_string(), 3500, None),
+                false,
+            ),
+            (
+                new(
+                    true,
+                    "13:00".to_string(),
+                    "15:00".to_string(),
+                    3500,
+                    Some("16:00".to_string()),
+                ),
+                false,
+            ),
+            (
+                new(
+                    true,
+                    "13:00".to_string(),
+                    "15:00".to_string(),
+                    3500,
+                    Some("14:00".to_string()),
+                ),
+                true,
+            ),
+            (
+                new(
+                    true,
+                    "22:00".to_string(),
+                    "03:00".to_string(),
+                    3500,
+                    Some("04:00".to_string()),
+                ),
+                false,
+            ),
+            (
+                new(
+                    true,
+                    "22:00".to_string(),
+                    "03:00".to_string(),
+                    3500,
+                    Some("23:00".to_string()),
+                ),
+                true,
+            ),
+            (
+                new(
+                    true,
+                    "22:00".to_string(),
+                    "03:00".to_string(),
+                    3500,
+                    Some("02:00".to_string()),
+                ),
+                true,
+            ),
+            (
+                new(
+                    true,
+                    "22:00".to_string(),
+                    "03:00".to_string(),
+                    3500,
+                    Some("03:00".to_string()),
+                ),
+                true,
+            ),
+            (
+                new(
+                    true,
+                    "22:00".to_string(),
+                    "03:00".to_string(),
+                    3500,
+                    Some("22:00".to_string()),
+                ),
+                true,
+            ),
+        ];
+        for (shader, expected) in shaders {
+            assert_eq!(shader.should_apply(None, None), expected)
+        }
+    }
+
+    #[test]
+    fn test_get() {
+        let time = "00:00".to_string();
+        let shaders = [
+            (new(true, time.clone(), time.clone(), 3500, None), "3500.0"),
+            (new(true, time.clone(), time.clone(), 5000, None), "5000.0"),
+            (new(true, time.clone(), time.clone(), 1, None), "1.0"),
+        ];
+        for (shader, expected) in shaders {
+            assert!(shader
+                .get()
+                .unwrap()
+                .contains(&format!("const float temperature = {};", expected)))
+        }
+    }
+
+    #[test]
+    fn test_hash() {
+        let time = "00:00".to_string();
+        let shaders = [
+            (
+                new(true, time.clone(), time.clone(), 3500, None),
+                "night_3500",
+            ),
+            (
+                new(true, time.clone(), time.clone(), 5000, None),
+                "night_5000",
+            ),
+            (new(true, time.clone(), time.clone(), 1, None), "night_1"),
+        ];
+        for (shader, expected) in shaders {
+            assert_eq!(shader.hash(), expected)
+        }
     }
 }

@@ -40,7 +40,7 @@ impl Default for NightLightConfig {
 pub struct VibranceConfig {
     pub window_class: String,
     pub window_title: String,
-    pub strength: i8,
+    pub strength: i32,
 }
 
 impl Default for VibranceConfig {

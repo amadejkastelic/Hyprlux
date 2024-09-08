@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
+use regex::Regex;
 use strfmt::Format;
+
+use crate::utils;
 
 use super::shader::Shader;
 
@@ -41,20 +44,35 @@ void main() {{
 pub struct VibranceShader {
     window_class: String,
     window_title: String,
-    strength: i8,
+    strength: i32,
 }
 
-pub fn new(window_class: String, window_title: String, strength: i8) -> VibranceShader {
+pub fn new(window_class: String, window_title: String, strength: i32) -> VibranceShader {
     VibranceShader {
         window_class,
         window_title,
-        strength,
+        strength: utils::int_in_range(strength, 1, 100),
     }
 }
 
 impl Shader for VibranceShader {
-    fn should_apply(&self, window_class: String, window_title: String) -> bool {
-        self.window_class == window_class || self.window_title == window_title
+    fn should_apply(&self, window_class: Option<String>, window_title: Option<String>) -> bool {
+        let window_class = window_class.unwrap_or("".to_string());
+        let window_title = window_title.unwrap_or("".to_string());
+
+        if !window_class.is_empty() {
+            return Regex::new(&self.window_class)
+                .unwrap()
+                .is_match(&window_class);
+        }
+        if !window_title.is_empty() {
+            return Regex::new(&self.window_title)
+                .unwrap()
+                .is_match(&window_title);
+        }
+
+        return (!window_class.is_empty() && self.window_class == window_class)
+            || (!window_title.is_empty()) && self.window_title == window_title;
     }
 
     fn get(&self) -> Result<String, Box<dyn std::error::Error>> {
@@ -69,5 +87,123 @@ impl Shader for VibranceShader {
             "vibrance_{}_{}_{}",
             self.window_class, self.window_title, self.strength
         )
+    }
+}
+
+#[cfg(test)]
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_should_apply() {
+        let shaders = [
+            (
+                "No match",
+                new("firefox".to_string(), "firefox".to_string(), 100),
+                (Some("class".to_string()), Some("title".to_string())),
+                false,
+            ),
+            (
+                "Class matches",
+                new("firefox".to_string(), "firefox".to_string(), 100),
+                (Some("firefox".to_string()), None),
+                true,
+            ),
+            (
+                "Title matches",
+                new("firefox".to_string(), "firefox".to_string(), 100),
+                (None, Some("firefox".to_string())),
+                true,
+            ),
+            (
+                "Regex class matches",
+                new("^(steam_app_)(.*)$".to_string(), "".to_string(), 100),
+                (
+                    Some("steam_app_123".to_string()),
+                    Some("Some Epic Game".to_string()),
+                ),
+                true,
+            ),
+            (
+                "Regex class doesn't match",
+                new("^(steam_app_)(.*)$".to_string(), "".to_string(), 100),
+                (Some("firefox".to_string()), Some("firefox".to_string())),
+                false,
+            ),
+            (
+                "Regex title matches",
+                new("".to_string(), "^(Some Epic)(.*)$".to_string(), 100),
+                (
+                    Some("steam_app_123".to_string()),
+                    Some("Some Epic Game".to_string()),
+                ),
+                true,
+            ),
+            (
+                "Regex class doesn't match",
+                new("".to_string(), "^(Some Epic)(.*)$".to_string(), 100),
+                (None, Some("Other Game".to_string())),
+                false,
+            ),
+        ];
+        for (name, shader, (class, title), expected) in shaders {
+            let res = shader.should_apply(class.clone(), title.clone());
+            assert!(
+                res == expected,
+                "{} - {} - {} - {}",
+                name,
+                class.unwrap_or("".to_string()),
+                title.unwrap_or("".to_string()),
+                expected,
+            )
+        }
+    }
+
+    #[test]
+    fn test_get() {
+        let string = "".to_string();
+        let shaders = [
+            (new(string.clone(), string.clone(), 100), "1.00".to_string()),
+            (new(string.clone(), string.clone(), 90), "0.90".to_string()),
+            (
+                new(string.clone(), string.clone(), 10000),
+                "1.00".to_string(),
+            ),
+            (new(string.clone(), string.clone(), 0), "0.01".to_string()),
+            (new(string.clone(), string.clone(), -10), "0.01".to_string()),
+            (new(string.clone(), string.clone(), 55), "0.55".to_string()),
+        ];
+        for (shader, expected) in shaders {
+            assert!(
+                shader
+                    .get()
+                    .unwrap()
+                    .contains(&format!("const float VIB_VIBRANCE = {};", expected)),
+                "{}",
+                expected,
+            )
+        }
+    }
+
+    #[test]
+    fn test_hash() {
+        let shaders = [
+            (
+                new("class".to_string(), "title".to_string(), 100),
+                "vibrance_class_title_100".to_string(),
+            ),
+            (
+                new("firefox".to_string(), "".to_string(), 10),
+                "vibrance_firefox__10".to_string(),
+            ),
+            (
+                new("firefox".to_string(), "firefox".to_string(), 15),
+                "vibrance_firefox_firefox_15".to_string(),
+            ),
+        ];
+        for (shader, expected) in shaders {
+            assert_eq!(shader.hash(), expected)
+        }
     }
 }
