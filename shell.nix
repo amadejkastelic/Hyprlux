@@ -1,11 +1,9 @@
-with import <nixpkgs> {};
-  stdenv.mkDerivation {
-    name = "hyprlux-shell";
-    buildInputs = [
-      rustc
-      cargo
-      rustfmt
-      clippy
-      rust-analyzer
-    ];
-  }
+{pkgs ? import <nixpkgs> {}}:
+pkgs.mkShell {
+  inputsFrom = [(pkgs.callPackage ./default.nix {})];
+  buildInputs = with pkgs; [
+    rust-analyzer
+    rustfmt
+    clippy
+  ];
+}
