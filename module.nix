@@ -38,10 +38,7 @@ hyprlux: {
   };
 
   cfg = config.programs.hyprlux;
-  configFormat = pkgs.formats.toml {};
-  hyprluxConfig = configFormat.generate "hyprland/hyprlux.toml" {
-    config = cfg.config;
-  };
+  cfgFormat = pkgs.formats.toml {};
 
   pkg = hyprlux.packages.${pkgs.system}.default;
 in {
@@ -106,6 +103,16 @@ in {
           strength = 10;
         }
       ];
+    };
+  };
+
+  config = lib.mkIf cfg.enable {
+    home.packages = [
+      cfg.package
+    ];
+
+    xdg.configFile."hyprland/hyprlux.toml" = {
+      source = cfgFormat.generate "hyprlux.toml" cfg.settings;
     };
   };
 }
