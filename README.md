@@ -51,3 +51,6 @@ Run `cargo build`
 
 ## TODO
 - [ ] Toggle night light based on location and time of day
+- [ ] Allow config reload
+- [ ] Allow stop / recume
+- [ ] Publish to aur and crate
