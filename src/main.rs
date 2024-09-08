@@ -60,11 +60,12 @@ fn main() -> hyprland::Result<()> {
                 break;
             }
         }
-        if !applied
-            && shader::apply_if_should(&night_light_shader, None, None, applied_shader.to_string())
+        if !applied && night_light_shader.should_apply(None, None) {
+            if shader::apply_if_should(&night_light_shader, None, None, applied_shader.to_string())
                 .unwrap()
-        {
-            *applied_shader = night_light_shader.hash();
+            {
+                *applied_shader = night_light_shader.hash();
+            }
         } else if !applied {
             shader::remove().unwrap();
             *applied_shader = "".to_string();
