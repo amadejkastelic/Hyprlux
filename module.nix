@@ -112,7 +112,10 @@ in {
     ];
 
     xdg.configFile."hyprland/hyprlux.toml" = {
-      source = cfgFormat.generate "hyprlux.toml" cfg.config;
+      source = cfgFormat.generate "hyprlux.toml" {
+        night_light = cfg.night_light;
+        vibrance_configs = cfg.vibrance_configs;
+      };
     };
   };
 }
