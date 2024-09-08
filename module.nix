@@ -112,7 +112,7 @@ in {
     ];
 
     xdg.configFile."hyprland/hyprlux.toml" = {
-      source = cfgFormat.generate "hyprlux.toml" cfg.settings;
+      source = cfgFormat.generate "hyprlux.toml" cfg.config;
     };
   };
 }
