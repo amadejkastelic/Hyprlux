@@ -5,7 +5,7 @@ A Hyprland utility program that automatically switches between shaders.
 ## Installation
 
 ### Nix
-Add hyprflux to your flake inputs:
+Add hyprlux to your flake inputs:
 ```nix
 inputs = {
   hyprlux = {
