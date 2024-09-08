@@ -60,19 +60,24 @@ impl Shader for VibranceShader {
         let window_class = window_class.unwrap_or("".to_string());
         let window_title = window_title.unwrap_or("".to_string());
 
+        let mut class_match = false;
+        let mut title_match = false;
+
         if !window_class.is_empty() {
-            return Regex::new(&self.window_class)
+            class_match = Regex::new(&self.window_class)
                 .unwrap()
                 .is_match(&window_class);
         }
         if !window_title.is_empty() {
-            return Regex::new(&self.window_title)
+            title_match = Regex::new(&self.window_title)
                 .unwrap()
                 .is_match(&window_title);
         }
+        if !window_title.is_empty() && !window_class.is_empty() {
+            return class_match && title_match;
+        }
 
-        return (!window_class.is_empty() && self.window_class == window_class)
-            || (!window_title.is_empty()) && self.window_title == window_title;
+        class_match || title_match
     }
 
     fn get(&self) -> Result<String, Box<dyn std::error::Error>> {
