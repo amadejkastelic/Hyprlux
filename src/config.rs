@@ -1,6 +1,6 @@
 use log::{error, info};
 use serde::Deserialize;
-use std::{env, fs, path::Path};
+use std::{env, fs};
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -56,20 +56,19 @@ impl Default for VibranceConfig {
 fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
     let config_file_path: String;
 
+    let xdg_dirs = xdg::BaseDirectories::with_prefix("hypr").unwrap();
+
     // If config file path provided as arg
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 {
         config_file_path = args[1].clone();
     } else {
-        let config_dir: String = env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| {
-            // Default to .config
-            "~/.config".to_string()
-        });
-        config_file_path = Path::new(&config_dir)
-            .join("hypr/hyprlux.toml")
+        config_file_path = xdg_dirs
+            .place_config_file("hyprlux.toml")
+            .unwrap()
             .into_os_string()
             .into_string()
-            .unwrap()
+            .unwrap();
     }
 
     info!("Loading config file at {}", &config_file_path);
