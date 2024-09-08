@@ -45,6 +45,7 @@ Then import it and use it as a module:
   };
 }
 ```
+Add it to your exec-once to automatically start it with Hyprland.
 ## Building
 Run `cargo build`
 
