@@ -66,7 +66,7 @@ fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
             "~/.config".to_string()
         });
         config_file_path = Path::new(&config_dir)
-            .join("hyprland/hyprlux.toml")
+            .join("hypr/hyprlux.toml")
             .into_os_string()
             .into_string()
             .unwrap()
