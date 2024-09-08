@@ -49,4 +49,4 @@ Then import it and use it as a module:
 Run `cargo build`
 
 ## TODO
-[ ] Toggle night light based on location and time of day
+- [ ] Toggle night light based on location and time of day
