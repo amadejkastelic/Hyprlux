@@ -21,7 +21,6 @@ void main() {{
     vec4 pixColor = texture2D(tex, v_texcoord);
     vec3 color = vec3(pixColor[0], pixColor[1], pixColor[2]);
 
-    // vec3 VIB_coefLuma = vec3(0.333333, 0.333334, 0.333333); // was for `if VIB_LUMA == 1`
     vec3 VIB_coefLuma = vec3(0.212656, 0.715158, 0.072186); // try both and see which one looks nicer.
 
     float luma = dot(VIB_coefLuma, color);
@@ -173,7 +172,7 @@ mod tests {
             (new(string.clone(), string.clone(), 90), "0.90".to_string()),
             (
                 new(string.clone(), string.clone(), 10000),
-                "1.00".to_string(),
+                "10.00".to_string(),
             ),
             (new(string.clone(), string.clone(), 0), "0.01".to_string()),
             (new(string.clone(), string.clone(), -10), "0.01".to_string()),
