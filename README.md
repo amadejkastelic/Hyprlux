@@ -13,13 +13,20 @@ inputs = {
   };
 };
 ```
-Then import it and use it as a module:
+Then import either the home manager module or nixos module:
+```nix
+imports = [
+  inputs.hyprlux.nixosModules.default
+];
+```
+```nix
+imports = [
+  inputs.hyprlux.homeManagerModules.default
+];
+```
+And configure it:
 ```nix
 {inputs, ...}: {
-  imports = [
-    inputs.hyprlux.nixosModules.default
-  ];
-
   programs.hyprlux = {
     enable = true;
 

@@ -13,14 +13,18 @@
     pkgsFor = nixpkgs.legacyPackages;
   in {
     packages = forAllSystems (system: {
-      default = pkgsFor.${system}.callPackage ./. {};
+      default = pkgsFor.${system}.callPackage ./nix/. {};
     });
     devShells = forAllSystems (system: {
       default = pkgsFor.${system}.callPackage ./shell.nix {};
     });
     nixosModules = {
-      hyprlux = import ./module.nix self;
+      hyprlux = import ./nix/module.nix self;
       default = self.nixosModules.hyprlux;
+    };
+    homeManagerModules = {
+      hyprlux = import ./nix/hm-module.nix self;
+      default = self.homeManagerModules.hyprlux;
     };
   };
 }
