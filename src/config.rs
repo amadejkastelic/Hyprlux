@@ -56,14 +56,13 @@ impl Default for VibranceConfig {
 fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
     let config_file_path: String;
 
-    let xdg_dirs = xdg::BaseDirectories::with_prefix("hypr").unwrap();
-
     // If config file path provided as arg
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 {
         config_file_path = args[1].clone();
     } else {
-        config_file_path = xdg_dirs
+        config_file_path = xdg::BaseDirectories::with_prefix("hypr")
+            .unwrap()
             .place_config_file("hyprlux.toml")
             .unwrap()
             .into_os_string()
@@ -73,7 +72,8 @@ fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
 
     info!("Loading config file at {}", &config_file_path);
 
-    let contents = fs::read_to_string(config_file_path).unwrap_or_else(|_| "".to_string());
+    let contents = fs::read_to_string(config_file_path)
+        .unwrap_or(fs::read_to_string("/etc/hyprlux/config.toml").unwrap_or("".to_string()));
 
     // Return default config if no config file exists
     if contents.is_empty() {

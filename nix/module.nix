@@ -106,8 +106,8 @@ in {
       cfg.package
     ];
 
-    xdg.configFile."hypr/hyprlux.toml" = {
-      source = cfgFormat.generate "hyprlux.toml" {
+    "/etc/hyprlux/config.toml" = {
+      source = cfgFormat.generate "config.toml" {
         night_light = cfg.night_light;
         vibrance_configs = cfg.vibrance_configs;
       };

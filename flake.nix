@@ -16,7 +16,7 @@
       default = pkgsFor.${system}.callPackage ./nix/. {};
     });
     devShells = forAllSystems (system: {
-      default = pkgsFor.${system}.callPackage ./nix/shell.nix {};
+      default = pkgsFor.${system}.callPackage ./shell.nix {};
     });
     nixosModules = {
       hyprlux = import ./nix/module.nix self;
