@@ -51,7 +51,7 @@ pub fn new(window_class: String, window_title: String, strength: i32) -> Vibranc
     VibranceShader {
         window_class,
         window_title,
-        strength: utils::int_in_range(strength, 1, 100),
+        strength: utils::int_in_range(strength, 1, 1000),
     }
 }
 
