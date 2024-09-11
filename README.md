@@ -52,7 +52,10 @@ And configure it:
   };
 }
 ```
-Add it to your exec-once to automatically start it with Hyprland.
+Add it to your exec-once to automatically start it with Hyprland:
+```nix
+exec-once=hyprlux > /tmp/hyprlux.log 2>&1
+```
 ## Building
 Run `cargo build`
 
