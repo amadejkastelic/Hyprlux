@@ -30,6 +30,11 @@ And configure it:
   programs.hyprlux = {
     enable = true;
 
+    systemd = {
+      enable = true;
+      target = "hyprland-session.target";
+    };
+
     night_light = {
       enabled = true;
       start_time = "22:00";
@@ -51,16 +56,12 @@ And configure it:
     ];
   };
 }
-```
-Add it to your exec-once to automatically start it with Hyprland:
-```nix
-exec-once=hyprlux > /tmp/hyprlux.log 2>&1
-```
 ## Building
 Run `cargo build`
 
 ## TODO
 - [ ] Toggle night light based on location and time of day
-- [ ] Allow config reload
+- [x] Allow config reload
 - [ ] Allow stop and resume
 - [ ] Publish to aur and crate
+- [x] Add nix module systemd service support

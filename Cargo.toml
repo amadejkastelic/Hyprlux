@@ -1,6 +1,6 @@
 [package]
 name = "hyprlux"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 [dependencies]
@@ -10,6 +10,7 @@ hyprland = { git = "https://github.com/hyprland-community/hyprland-rs", branch =
     "silent",
 ] }
 log = "0.4.22"
+notify = "6.1.1"
 regex = "1.10.6"
 serde = { version = "1.0", features = ["derive"] }
 strfmt = "0.2.4"

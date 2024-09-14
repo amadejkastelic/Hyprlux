@@ -1,5 +1,6 @@
 use chrono::{Local, NaiveTime};
 
+#[derive(Clone, PartialEq)]
 pub struct Time {
     mock_time: Option<NaiveTime>,
 }
@@ -26,6 +27,10 @@ pub fn int_in_range(value: i32, min: i32, max: i32) -> i32 {
     }
 
     value
+}
+
+pub fn shader_hash_from_path(path: String) -> Option<String> {
+    Some(path.split("/").last().unwrap().to_string())
 }
 
 #[cfg(test)]

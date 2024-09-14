@@ -2,6 +2,7 @@ use std::env;
 use std::fs::File;
 use std::io::Write;
 
+use super::super::utils;
 use hyprland::keyword::Keyword;
 use log::info;
 
@@ -14,10 +15,12 @@ pub trait Shader {
     fn hash(&self) -> String;
 }
 
-pub fn apply(shader: &impl Shader) -> Result<(), Box<dyn std::error::Error>> {
+pub fn apply(shader: &dyn Shader) -> Result<(), Box<dyn std::error::Error>> {
+    info!("Applying shader: {}", shader.hash());
+
     let output = shader.get().unwrap();
 
-    let path = env::temp_dir().join("shader.glsl").to_owned();
+    let path = env::temp_dir().join(shader.hash()).to_owned();
 
     let mut shader_file = File::create(path.clone())?;
     shader_file.write_all(output.as_bytes())?;
@@ -29,23 +32,16 @@ pub fn apply(shader: &impl Shader) -> Result<(), Box<dyn std::error::Error>> {
     )?)
 }
 
-pub fn apply_if_should(
-    shader: &impl Shader,
-    window_class: Option<String>,
-    window_title: Option<String>,
-    last_applied_shader_hash: String,
-) -> Result<bool, Box<dyn std::error::Error>> {
-    if last_applied_shader_hash != shader.hash() && shader.should_apply(window_class, window_title)
-    {
-        info!("Applying shader {}", shader.hash());
-        remove().unwrap();
-        apply(shader)?;
-        return Ok(true);
-    }
-
-    Ok(false)
-}
-
 pub fn remove() -> Result<(), Box<dyn std::error::Error>> {
     Ok(Keyword::set(SHADER_KEY, NO_SHADER)?)
+}
+
+pub fn get() -> Option<String> {
+    let shader = Keyword::get(SHADER_KEY).unwrap();
+
+    if shader.value.to_string() == NO_SHADER {
+        return None;
+    }
+
+    Some(utils::shader_hash_from_path(shader.value.to_string()).unwrap())
 }
