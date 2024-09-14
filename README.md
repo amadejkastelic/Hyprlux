@@ -56,6 +56,7 @@ And configure it:
     ];
   };
 }
+```
 ## Building
 Run `cargo build`
 
