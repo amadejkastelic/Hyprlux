@@ -65,6 +65,21 @@ in {
         default = pkg;
       };
 
+    systemd.enable = lib.mkEnableOption "Use as a systemd service";
+
+    systemd.target = lib.mkOption {
+      type = lib.types.str;
+      default = "graphical-session.target";
+      example = "hyprland-session.target";
+      description = ''
+        The systemd target that will automatically start the Hyprlux service.
+
+        When setting this value to `"hyprland-session.target"`,
+        make sure to also enable {option}`wayland.windowManager.hyprland.systemd.enable`,
+        otherwise the service may never be started.
+      '';
+    };
+
     night_light = lib.mkOption {
       type = nightLightSubmodule;
       description = "Night light settings";
@@ -101,16 +116,38 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    home.packages = [
-      cfg.package
-    ];
+  config = lib.mkIf cfg.enable (lib.mkMerge [
+    {
+      home.packages = [cfg.package];
 
-    xdg.configFile."hypr/hyprlux.toml" = {
-      source = cfgFormat.generate "hyprlux.toml" {
-        night_light = cfg.night_light;
-        vibrance_configs = cfg.vibrance_configs;
+      xdg.configFile."hypr/hyprlux.toml" = {
+        source = cfgFormat.generate "hyprlux.toml" {
+          night_light = cfg.night_light;
+          vibrance_configs = cfg.vibrance_configs;
+        };
       };
-    };
-  };
+    }
+
+    (lib.mkIf cfg.systemd.enable {
+      systemd.user.services.hyprlux = {
+        Unit = {
+          Description = "Hyprlux shader manager service";
+          Documentation = "https://github.com/amadejkastelic/Hyprlux";
+          PartOf = ["graphical-session.target"];
+          After = ["graphical-session-pre.target"];
+        };
+
+        Service = {
+          ExecStart = "${cfg.package}/bin/hyprlux";
+          ExecReload = "${cfg.coreutils}/bin/kill -SIGUSR2 $MAINPID";
+          Restart = "on-failure";
+          KillMode = "mixed";
+        };
+
+        Install = {
+          WantedBy = [cfg.systemd.target];
+        };
+      };
+    })
+  ]);
 }
