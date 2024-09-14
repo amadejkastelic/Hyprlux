@@ -1,6 +1,6 @@
 use chrono::{Local, NaiveTime};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Time {
     mock_time: Option<NaiveTime>,
 }

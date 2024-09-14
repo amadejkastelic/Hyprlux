@@ -33,13 +33,11 @@ pub fn apply(shader: &dyn Shader) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 pub fn remove() -> Result<(), Box<dyn std::error::Error>> {
-    info!("Removing active shader");
     Ok(Keyword::set(SHADER_KEY, NO_SHADER)?)
 }
 
 pub fn get() -> Option<String> {
     let shader = Keyword::get(SHADER_KEY).unwrap();
-    info!("Getting shader {}", shader.value.to_string());
 
     if shader.value.to_string() == NO_SHADER {
         return None;

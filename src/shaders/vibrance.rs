@@ -40,7 +40,7 @@ void main() {{
 }}
 ";
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct VibranceShader {
     window_class: String,
     window_title: String,
