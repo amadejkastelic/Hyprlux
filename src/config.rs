@@ -1,6 +1,9 @@
 use log::{error, info};
+use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use serde::Deserialize;
-use std::{env, fs};
+use std::{env, fs, path::Path, time::Duration};
+
+const DEFAULT_CONFIG_PATH: &str = "/etc/hyprlux/config.toml";
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -53,27 +56,30 @@ impl Default for VibranceConfig {
     }
 }
 
-fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
-    let config_file_path: String;
-
-    // If config file path provided as arg
+pub fn path() -> String {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 {
-        config_file_path = args[1].clone();
-    } else {
-        config_file_path = xdg::BaseDirectories::with_prefix("hypr")
-            .unwrap()
-            .place_config_file("hyprlux.toml")
-            .unwrap()
-            .into_os_string()
-            .into_string()
-            .unwrap();
+        return args[1].clone().to_string();
     }
 
-    info!("Loading config file at {}", &config_file_path);
+    let config_file_path = xdg::BaseDirectories::with_prefix("hypr")
+        .unwrap()
+        .get_config_file("hyprlux.toml");
 
-    let contents = fs::read_to_string(config_file_path)
-        .unwrap_or(fs::read_to_string("/etc/hyprlux/config.toml").unwrap_or("".to_string()));
+    if config_file_path.exists() {
+        return config_file_path
+            .into_os_string()
+            .into_string()
+            .unwrap_or(DEFAULT_CONFIG_PATH.to_string());
+    }
+
+    DEFAULT_CONFIG_PATH.to_string()
+}
+
+pub fn load(config_path: String) -> Result<Config, Box<dyn std::error::Error>> {
+    info!("Loading config file at {}", &config_path);
+
+    let contents = fs::read_to_string(config_path).unwrap();
 
     // Return default config if no config file exists
     if contents.is_empty() {
@@ -84,6 +90,24 @@ fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
     Ok(toml::from_str(&contents).unwrap())
 }
 
-pub fn get_config() -> Result<Config, Box<dyn std::error::Error>> {
-    load_config()
+pub fn watch<P: AsRef<Path>>(path: P) -> notify::Result<()> {
+    let (tx, rx) = std::sync::mpsc::channel();
+
+    let mut watcher = RecommendedWatcher::new(
+        tx,
+        notify::Config::default()
+            .with_poll_interval(Duration::from_secs(2))
+            .with_compare_contents(false),
+    )?;
+
+    watcher.watch(path.as_ref(), RecursiveMode::NonRecursive)?;
+
+    for res in rx {
+        match res {
+            Ok(event) => log::info!("Change: {event:?}"),
+            Err(error) => log::error!("Error: {error:?}"),
+        }
+    }
+
+    Ok(())
 }

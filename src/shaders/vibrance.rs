@@ -40,6 +40,7 @@ void main() {{
 }}
 ";
 
+#[derive(Clone)]
 pub struct VibranceShader {
     window_class: String,
     window_title: String,
@@ -87,10 +88,7 @@ impl Shader for VibranceShader {
     }
 
     fn hash(&self) -> String {
-        format!(
-            "vibrance_{}_{}_{}",
-            self.window_class, self.window_title, self.strength
-        )
+        format!("vibrance_{}", self.strength)
     }
 }
 
@@ -195,15 +193,15 @@ mod tests {
         let shaders = [
             (
                 new("class".to_string(), "title".to_string(), 100),
-                "vibrance_class_title_100".to_string(),
+                "vibrance_100".to_string(),
             ),
             (
                 new("firefox".to_string(), "".to_string(), 10),
-                "vibrance_firefox__10".to_string(),
+                "vibrance_10".to_string(),
             ),
             (
                 new("firefox".to_string(), "firefox".to_string(), 15),
-                "vibrance_firefox_firefox_15".to_string(),
+                "vibrance_15".to_string(),
             ),
         ];
         for (shader, expected) in shaders {

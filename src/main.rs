@@ -2,11 +2,8 @@ mod config;
 mod shaders;
 mod utils;
 
-use std::sync::{Arc, Mutex};
-
-use config::get_config;
 use hyprland::event_listener::EventListener;
-use log::{debug, info};
+use log::info;
 use shaders::shader::{self, Shader};
 
 fn main() -> hyprland::Result<()> {
@@ -14,11 +11,11 @@ fn main() -> hyprland::Result<()> {
 
     let mut event_listener = EventListener::new();
 
-    // Load config
-    let cfg = get_config().unwrap();
-    info!("Config loaded: {:?}", cfg);
+    let config_path = config::path();
 
-    let applied_shader = Arc::new(Mutex::new(String::from("")));
+    // Load config
+    let cfg = config::load(config_path).unwrap();
+    info!("Config loaded: {:?}", cfg);
 
     // Create shaders
     let night_light_shader = shaders::night_light::new(
@@ -43,32 +40,41 @@ fn main() -> hyprland::Result<()> {
 
     event_listener.add_active_window_change_handler(move |data| {
         let data = data.unwrap();
-        let mut applied = false;
-        let mut applied_shader = applied_shader.lock().unwrap();
-        debug!("Curent shader: {}", applied_shader.to_string());
+        let applied_shader = shader::get().unwrap_or("null".to_string());
+        info!("Curent shader: {}", applied_shader);
+        let mut shader_to_apply: Option<Box<dyn shader::Shader>> = None;
+
+        // Should apply night light shader?
+        if night_light_shader.should_apply(
+            Some(data.window_class.to_string()),
+            Some(data.window_title.to_string()),
+        ) {
+            shader_to_apply = Some(Box::new(night_light_shader.clone()))
+        }
+
+        // Should apply vibrance shader?
         for vibrance_shader in &vibrance_shaders {
-            if shader::apply_if_should(
-                vibrance_shader,
-                Some(data.window_class.clone()),
-                Some(data.window_title.clone()),
-                applied_shader.to_string(),
-            )
-            .unwrap()
-            {
-                *applied_shader = vibrance_shader.hash();
-                applied = true;
+            if vibrance_shader.should_apply(
+                Some(data.window_class.to_string()),
+                Some(data.window_title.to_string()),
+            ) {
+                shader_to_apply = Some(Box::new(vibrance_shader.clone()));
                 break;
             }
         }
-        if !applied && night_light_shader.should_apply(None, None) {
-            if shader::apply_if_should(&night_light_shader, None, None, applied_shader.to_string())
-                .unwrap()
-            {
-                *applied_shader = night_light_shader.hash();
-            }
-        } else if !applied {
+
+        // Remove current shader
+        if shader_to_apply.is_none() && applied_shader != "null".to_string() {
             shader::remove().unwrap();
-            *applied_shader = "".to_string();
+            return;
+        } else if shader_to_apply.is_none() {
+            return;
+        }
+
+        let shader_to_apply = shader_to_apply.unwrap();
+        // Apply shader if needed
+        if shader_to_apply.hash() != applied_shader {
+            shader::apply(shader_to_apply.as_ref()).unwrap();
         }
     });
 

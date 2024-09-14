@@ -45,6 +45,7 @@ void main() {{
 ";
 const TIME_FMT: &str = "%H:%M";
 
+#[derive(Clone)]
 pub struct NightLightShader {
     enabled: bool,
     start_time: NaiveTime,
