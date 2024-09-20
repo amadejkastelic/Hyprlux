@@ -37,8 +37,12 @@ And configure it:
 
     night_light = {
       enabled = true;
+      # Manual sunset and sunrise
       start_time = "22:00";
       end_time = "06:00";
+      # Automatic sunset and sunrise
+      latitude = 46.056946;
+      longitude = 14.505751;
       temperature = 3500;
     };
 
