@@ -5,6 +5,7 @@ mod utils;
 use hyprland::event_listener::EventListener;
 use log::{debug, error, info};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use shaders::night_light::NightLightShader;
 use shaders::shader::{self, Shader};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
@@ -131,13 +132,26 @@ fn load_config_and_shaders(config_path: &str) -> ConfigData {
     let cfg = cfg.unwrap();
     info!("Config loaded: {:?}", cfg);
 
-    let night_light_shader = shaders::night_light::new(
-        cfg.night_light.enabled,
-        cfg.night_light.start_time,
-        cfg.night_light.end_time,
-        cfg.night_light.temperature,
-        None,
-    );
+    let night_light_shader: Option<NightLightShader>;
+    if cfg.night_light.latitude.is_some() && cfg.night_light.longitude.is_some() {
+        night_light_shader = Some(shaders::night_light::new_from_location(
+            cfg.night_light.enabled,
+            cfg.night_light.latitude.unwrap(),
+            cfg.night_light.longitude.unwrap(),
+            cfg.night_light.temperature,
+            None,
+        ));
+    } else if cfg.night_light.start_time.is_some() && cfg.night_light.end_time.is_some() {
+        night_light_shader = Some(shaders::night_light::new(
+            cfg.night_light.enabled,
+            cfg.night_light.start_time.unwrap(),
+            cfg.night_light.end_time.unwrap(),
+            cfg.night_light.temperature,
+            None,
+        ));
+    } else {
+        night_light_shader = None;
+    }
 
     let vibrance_shaders: Vec<shaders::vibrance::VibranceShader> = cfg
         .vibrance_configs
@@ -152,7 +166,7 @@ fn load_config_and_shaders(config_path: &str) -> ConfigData {
         .collect();
 
     ConfigData {
-        night_light_shader: Some(night_light_shader),
+        night_light_shader,
         vibrance_shaders,
     }
 }

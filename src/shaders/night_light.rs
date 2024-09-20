@@ -1,6 +1,7 @@
 use std::collections::HashMap;
+use std::time::{Duration, UNIX_EPOCH};
 
-use chrono::NaiveTime;
+use chrono::{DateTime, Datelike, Local, NaiveTime};
 use strfmt::Format;
 
 use super::super::utils::Time;
@@ -76,6 +77,29 @@ pub fn new(
         shader_vars,
         time_impl: time,
     }
+}
+
+pub fn new_from_location(
+    enabled: bool,
+    latitude: f64,
+    longitude: f64,
+    temperature: i32,
+    mock_time: Option<String>,
+) -> NightLightShader {
+    let now = Local::now();
+    let (sunrise, sunset) =
+        sunrise::sunrise_sunset(latitude, longitude, now.year(), now.month(), now.day());
+
+    let start_time = unix_to_string(sunset.try_into().unwrap());
+    let end_time = unix_to_string(sunrise.try_into().unwrap());
+
+    new(enabled, start_time, end_time, temperature, mock_time)
+}
+
+fn unix_to_string(ts: u64) -> String {
+    DateTime::<Local>::from(UNIX_EPOCH + Duration::from_secs(ts))
+        .format(TIME_FMT)
+        .to_string()
 }
 
 impl Shader for NightLightShader {
