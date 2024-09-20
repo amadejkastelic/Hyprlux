@@ -339,7 +339,7 @@ dependencies = [
 
 [[package]]
 name = "hyprlux"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "chrono",
  "colog",
@@ -349,6 +349,7 @@ dependencies = [
  "regex",
  "serde",
  "strfmt",
+ "sunrise",
  "toml",
  "xdg",
 ]
@@ -720,6 +721,15 @@ name = "strfmt"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a8348af2d9fc3258c8733b8d9d8db2e56f54b2363a4b5b81585c7875ed65e65"
+
+[[package]]
+name = "sunrise"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3217c5830416956b1f2dc731f526150a82c144ebe83d2f0e78853c8356a22ada"
+dependencies = [
+ "chrono",
+]
 
 [[package]]
 name = "syn"

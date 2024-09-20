@@ -61,8 +61,7 @@ And configure it:
 Run `cargo build`
 
 ## TODO
-- [ ] Toggle night light based on location and time of day
+- [x] Toggle night light based on location and time of day
 - [x] Allow config reload
-- [ ] Allow stop and resume
 - [ ] Publish to aur and crate
 - [x] Add nix module systemd service support

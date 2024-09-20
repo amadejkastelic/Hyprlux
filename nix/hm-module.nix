@@ -13,14 +13,24 @@ hyprlux: {
         type = lib.types.bool;
         default = false;
       };
+      latitude = lib.mkOption {
+        description = "Your latitude";
+        type = with lib.types; nullOr (oneOf [int float]);
+        default = null;
+      };
+      longitude = lib.mkOption {
+        description = "Your longitude";
+        type = with lib.types; nullOr (oneOf [int float]);
+        default = null;
+      };
       start_time = lib.mkOption {
         description = "When to start night light";
-        type = time;
+        type = lib.types.nullOr time;
         default = "20:00";
       };
       end_time = lib.mkOption {
         description = "When to end night light";
-        type = time;
+        type = lib.types.nullOr time;
         default = "06:00";
       };
       temperature = lib.mkOption {
@@ -91,8 +101,8 @@ in {
       };
       example = {
         enabled = true;
-        start_time = "20:00";
-        end_time = "06:00";
+        latitude = 46.056946;
+        longitude = 14.505751;
         temperature = 3500;
       };
     };
@@ -122,7 +132,7 @@ in {
 
       xdg.configFile."hypr/hyprlux.toml" = {
         source = cfgFormat.generate "hyprlux.toml" {
-          night_light = cfg.night_light;
+          night_light = lib.attrsets.filterAttrs (n: v: v != null) cfg.night_light;
           vibrance_configs = cfg.vibrance_configs;
         };
       };

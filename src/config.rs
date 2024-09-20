@@ -22,18 +22,22 @@ impl Default for Config {
 #[derive(Debug, Deserialize)]
 pub struct NightLightConfig {
     pub enabled: bool,
-    pub start_time: String,
-    pub end_time: String,
+    pub start_time: Option<String>,
+    pub end_time: Option<String>,
     pub temperature: i32,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
 }
 
 impl Default for NightLightConfig {
     fn default() -> Self {
         Self {
             enabled: false,
-            start_time: "00:00".to_string(),
-            end_time: "00:00".to_string(),
+            start_time: None,
+            end_time: None,
             temperature: 3500,
+            latitude: None,
+            longitude: None,
         }
     }
 }
