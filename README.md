@@ -2,6 +2,10 @@
 
 A Hyprland utility program that automatically switches between shaders.
 
+It currently supports two shaders with configurable strengths:
+- Night light (blue light filter) - based on location or custom times
+- Vibrance - toggles digital vibrance based on currently active window
+
 ## Installation
 
 <h4>
