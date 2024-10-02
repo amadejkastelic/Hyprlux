@@ -15,7 +15,7 @@ It currently supports two shaders with configurable strengths:
            width="20">
      </sub>
      NixOS
-     </a><a href="j"><img alt="NixOS Version" src="https://img.shields.io/badge/git-brightgreen" align="right"></a>
+     </a><a href="nix"><img alt="NixOS Version" src="https://img.shields.io/badge/git-brightgreen" align="right"></a>
 </h4>
 
 <details>
