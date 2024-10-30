@@ -126,10 +126,3 @@ Example configurations are available in [examples](examples/).
 
 ## Building
 Run `cargo build`
-
-## TODO
-- [x] Toggle night light based on location and time of day
-- [x] Allow config reload
-- [x] Publish to aur
-- [x] Add nix module systemd service support
-- [x] Publish crate
