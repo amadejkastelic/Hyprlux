@@ -10,6 +10,24 @@ It currently supports two shaders with configurable strengths:
 
 <h4>
      <sub>
+          <img  src="https://cdn.simpleicons.org/rust/white"
+           height="20"
+           width="20">
+     </sub>
+     Cargo
+     <a href="https://crates.io/crates/hyprlux"><img alt="Cargo Version" src="https://img.shields.io/crates/v/hyprlux?color=brightgreen&label=" align="right"></a>
+</h4>
+
+<details>
+  <summary>Click to expand</summary>
+
+  ```bash
+  cargo install hyprlux
+  ```
+</details>
+
+<h4>
+     <sub>
           <img  src="https://cdn.simpleicons.org/nixos/white"
            height="20"
            width="20">
@@ -45,12 +63,12 @@ It currently supports two shaders with configurable strengths:
   {inputs, ...}: {
     programs.hyprlux = {
       enable = true;
-  
+
       systemd = {
         enable = true;
         target = "hyprland-session.target";
       };
-  
+
       night_light = {
         enabled = true;
         # Manual sunset and sunrise
@@ -61,7 +79,7 @@ It currently supports two shaders with configurable strengths:
         longitude = 14.505751;
         temperature = 3500;
       };
-  
+
       vibrance_configs = [
         {
           window_class = "steam_app_1172470";
@@ -114,4 +132,4 @@ Run `cargo build`
 - [x] Allow config reload
 - [x] Publish to aur
 - [x] Add nix module systemd service support
-- [ ] Publish crate
+- [x] Publish crate
