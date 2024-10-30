@@ -2,6 +2,12 @@
 name = "hyprlux"
 version = "0.1.4"
 edition = "2021"
+authors = ["Amadej Kastelic <amadejkastelic7@gmail.com>"]
+description = "Hyprland utility that automates vibrance and night light control"
+repository = "https://github.com/amadejkastelic/Hyprlux"
+readme = "README.md"
+license = "MIT"
+keywords = ["hyprland", "vibrance", "night", "light", "flux"]
 
 [dependencies]
 chrono = "0.4.38"
