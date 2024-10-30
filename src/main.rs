@@ -81,20 +81,16 @@ fn main() -> hyprland::Result<()> {
         // Should apply night light shader?
         if config_data.night_light_shader.is_some() {
             let shader = config_data.night_light_shader.clone().unwrap();
-            if shader.should_apply(
-                Some(data.class.to_string()),
-                Some(data.title.to_string()),
-            ) {
+            if shader.should_apply(Some(data.class.to_string()), Some(data.title.to_string())) {
                 shader_to_apply = Some(Box::new(shader));
             }
         }
 
         // Should apply vibrance shader?
         for vibrance_shader in &config_data.vibrance_shaders {
-            if vibrance_shader.should_apply(
-                Some(data.class.to_string()),
-                Some(data.title.to_string()),
-            ) {
+            if vibrance_shader
+                .should_apply(Some(data.class.to_string()), Some(data.title.to_string()))
+            {
                 shader_to_apply = Some(Box::new(vibrance_shader.clone()));
                 break;
             }
