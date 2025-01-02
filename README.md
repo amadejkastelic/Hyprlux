@@ -128,7 +128,7 @@ Example configurations are available in [examples](examples/).
 
 Either run it as a systemd service or include it in your hyprland exec-once config:
 
-```toml
+```hypr
 exec-once=hyprlux > /tmp/hyprlux.log 2>&1
 ```
 
