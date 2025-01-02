@@ -109,6 +109,13 @@ in {
         }
       ];
     };
+
+    hot_reload = lib.mkOption {
+      description = "Listen for config changes";
+      type = lib.types.bool;
+      default = false;
+      example = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -120,6 +127,7 @@ in {
       source = cfgFormat.generate "config.toml" {
         night_light = lib.attrsets.filterAttrs (n: v: v != null) cfg.night_light;
         vibrance_configs = cfg.vibrance_configs;
+        hot_reload = cfg.hot_reload;
       };
     };
   };

@@ -8,6 +8,7 @@ const DEFAULT_CONFIG_PATH: &str = "/etc/hyprlux/config.toml";
 pub struct Config {
     pub night_light: NightLightConfig,
     pub vibrance_configs: Vec<VibranceConfig>,
+    pub hot_reload: Option<bool>,
 }
 
 impl Default for Config {
@@ -15,6 +16,7 @@ impl Default for Config {
         Self {
             night_light: NightLightConfig::default(),
             vibrance_configs: Vec::new(),
+            hot_reload: Some(false),
         }
     }
 }

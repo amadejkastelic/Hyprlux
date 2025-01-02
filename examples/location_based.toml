@@ -4,3 +4,5 @@ vibrance_configs = [
   { window_class = "firefox", window_title = "", strength = 100 },
   { window_class = "mplayer2", window_title = "Video Player", strength = 100 },
 ]
+
+hot_reload = true

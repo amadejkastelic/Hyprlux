@@ -124,5 +124,13 @@ Hyprlux looks for configs in the following locations (sorted by priority):
 
 Example configurations are available in [examples](examples/).
 
+## Running
+
+Either run it as a systemd service or include it in your hyprland exec-once config:
+
+```toml
+exec-once=hyprlux > /tmp/hyprlux.log 2>&1
+```
+
 ## Building
 Run `cargo build`
