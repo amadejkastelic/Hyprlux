@@ -15,6 +15,7 @@ fn main() -> hyprland::Result<()> {
     colog::init();
 
     let config_path = config::path();
+    let config_data = Arc::new(Mutex::new(load_config_and_shaders(&config_path)));
 
     // Channel for notifying when the config file changes
     let (tx, rx) = mpsc::channel();
@@ -31,39 +32,39 @@ fn main() -> hyprland::Result<()> {
         .watch(config_path.as_ref(), RecursiveMode::NonRecursive)
         .unwrap();
 
-    let config_data = Arc::new(Mutex::new(load_config_and_shaders(&config_path)));
-
     let config_data_clone = Arc::clone(&config_data);
 
-    // Spawn a thread to watch for config changes and reload shaders
-    let debounce_delay = Duration::from_millis(2000);
-    let mut last_event_time = Instant::now();
-    thread::spawn(move || loop {
-        match rx.recv() {
-            Ok(_) => {
-                let now = Instant::now();
-                if now.duration_since(last_event_time) > debounce_delay {
-                    info!("Config file changed. Reloading...");
+    if config_data_clone.lock().unwrap().hot_reload {
+        // Spawn a thread to watch for config changes and reload shaders
+        let debounce_delay = Duration::from_millis(2000);
+        let mut last_event_time = Instant::now();
+        thread::spawn(move || loop {
+            match rx.recv() {
+                Ok(_) => {
+                    let now = Instant::now();
+                    if now.duration_since(last_event_time) > debounce_delay {
+                        info!("Config file changed. Reloading...");
 
-                    let new_config = load_config_and_shaders(&config_path);
+                        let new_config = load_config_and_shaders(&config_path);
 
-                    let mut config_data = config_data_clone.lock().unwrap();
+                        let mut config_data = config_data_clone.lock().unwrap();
 
-                    // Only load config if it's not the same and it contains data
-                    if new_config != *config_data
-                        && new_config.night_light_shader != None
-                        && new_config.vibrance_shaders.len() > 0
-                    {
-                        *config_data = load_config_and_shaders(&config_path);
-                        last_event_time = now;
+                        // Only load config if it's not the same and it contains data
+                        if new_config != *config_data
+                            && new_config.night_light_shader != None
+                            && new_config.vibrance_shaders.len() > 0
+                        {
+                            *config_data = load_config_and_shaders(&config_path);
+                            last_event_time = now;
+                        }
+                    } else {
+                        info!("Ignoring duplicate event within debounce period");
                     }
-                } else {
-                    info!("Ignoring duplicate event within debounce period");
                 }
+                Err(error) => error!("Watch error: {:?}", error),
             }
-            Err(error) => error!("Watch error: {:?}", error),
-        }
-    });
+        });
+    }
 
     // Setup the event listener
     let mut event_listener = EventListener::new();
@@ -122,6 +123,7 @@ fn load_config_and_shaders(config_path: &str) -> ConfigData {
         return ConfigData {
             night_light_shader: None,
             vibrance_shaders: [].to_vec(),
+            hot_reload: false,
         };
     }
 
@@ -164,6 +166,7 @@ fn load_config_and_shaders(config_path: &str) -> ConfigData {
     ConfigData {
         night_light_shader,
         vibrance_shaders,
+        hot_reload: cfg.hot_reload.unwrap_or(false),
     }
 }
 
@@ -171,4 +174,5 @@ fn load_config_and_shaders(config_path: &str) -> ConfigData {
 struct ConfigData {
     night_light_shader: Option<shaders::night_light::NightLightShader>,
     vibrance_shaders: Vec<shaders::vibrance::VibranceShader>,
+    hot_reload: bool,
 }
