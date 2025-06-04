@@ -1,0 +1,23 @@
+name: Git Mirror
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mirror main branch to Codeberg
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+        run: |
+          git remote add codeberg https://amadejkastelic:${CODEBERG_TOKEN}@codeberg.org/amadejkastelic/Hyprlux.git
+          git push codeberg main:main
+          git push codeberg --tags
