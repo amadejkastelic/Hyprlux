@@ -8,9 +8,12 @@ use crate::utils;
 use super::shader::Shader;
 
 const SHADER: &str = "
+#version 300 es
 precision highp float;
-varying vec2 v_texcoord;
+in vec2 v_texcoord;
 uniform sampler2D tex;
+
+layout(location = 0) out vec4 fragColor;
 
 const vec3 VIB_RGB_BALANCE = vec3(1.0, 1.0, 1.0);
 const float VIB_VIBRANCE = {strength:.2};
@@ -36,7 +39,7 @@ void main() {{
     pixColor[1] = mix(luma, color[1], p_col[1]);
     pixColor[2] = mix(luma, color[2], p_col[2]);
 
-    gl_FragColor = pixColor;
+    fragColor = pixColor;
 }}
 ";
 

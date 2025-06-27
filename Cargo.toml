@@ -1,6 +1,6 @@
 [package]
 name = "hyprlux"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 authors = ["Amadej Kastelic <amadejkastelic7@gmail.com>"]
 description = "Hyprland utility that automates vibrance and night light control"

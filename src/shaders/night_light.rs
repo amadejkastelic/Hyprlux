@@ -8,9 +8,12 @@ use super::super::utils::Time;
 use super::shader::Shader;
 
 const SHADER: &str = "
+#version 300 es
 precision highp float;
-varying vec2 v_texcoord;
+in vec2 v_texcoord;
 uniform sampler2D tex;
+
+layout(location = 0) out vec4 fragColor;
 
 const float temperature = {temperature}.0;
 const float temperatureStrength = 1.0;
@@ -41,7 +44,7 @@ void main() {{
 #endif
     color = mix(color, color * colorTemperatureToRGB(temperature), temperatureStrength);
     vec4 outCol = vec4(color, pixColor[3]);
-    gl_FragColor = outCol;
+    fragColor = outCol;
 }}
 ";
 const TIME_FMT: &str = "%H:%M";
