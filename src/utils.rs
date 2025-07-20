@@ -12,7 +12,7 @@ impl Time {
 
     pub fn now(&self) -> NaiveTime {
         match self.mock_time {
-            Some(p) => return p,
+            Some(p) => p,
             None => Local::now().time(),
         }
     }

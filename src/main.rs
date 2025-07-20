@@ -51,8 +51,8 @@ fn main() -> hyprland::Result<()> {
 
                         // Only load config if it's not the same and it contains data
                         if new_config != *config_data
-                            && new_config.night_light_shader != None
-                            && new_config.vibrance_shaders.len() > 0
+                            && new_config.night_light_shader.is_some()
+                            && !new_config.vibrance_shaders.is_empty()
                         {
                             *config_data = load_config_and_shaders(&config_path);
                             last_event_time = now;
@@ -98,7 +98,7 @@ fn main() -> hyprland::Result<()> {
         }
 
         // Remove current shader if none should apply
-        if shader_to_apply.is_none() && applied_shader != "null".to_string() {
+        if shader_to_apply.is_none() && applied_shader != *"null" {
             shader::remove().unwrap();
             return;
         } else if shader_to_apply.is_none() {
