@@ -3,6 +3,16 @@ on:
     tags:
       - '*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (if different from tag)'
+        required: false
+        type: string
+      pkgrel:
+        description: 'Package release number'
+        required: false
+        default: '1'
+        type: string
 
 name: Publish
 
@@ -13,12 +23,56 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+      - name: Install nix action
+        uses: cachix/install-nix-action@v20
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - run: cargo publish --token ${CARGO_REGISTRY_TOKEN}
+          install_url: https://nixos.org/nix/install
+          extra_nix_config: |
+            auto-optimise-store = true
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            experimental-features = nix-command flakes
+      - name: Verify nix build works
+        run: nix build
+      - name: Publish to crates.io
+        run: nix develop -c cargo publish --token ${CARGO_REGISTRY_TOKEN}
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: Publish to AUR
+        run: |
+          # Determine version and pkgrel
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version || github.ref_name }}"
+            PKGREL="${{ inputs.pkgrel }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+            PKGREL="1"
+          fi
+
+          # Download source tarball and calculate SHA256
+          TARBALL_URL="https://github.com/amadejkastelic/Hyprlux/archive/refs/tags/${VERSION}.tar.gz"
+          curl -L -o "source.tar.gz" "$TARBALL_URL"
+          TARBALL_SHA=$(sha256sum source.tar.gz | cut -d' ' -f1)
+
+          # Calculate SHA256 for service and config files
+          SERVICE_SHA=$(sha256sum aur/hyprlux.service | cut -d' ' -f1)
+          CONFIG_SHA=$(sha256sum aur/config.toml | cut -d' ' -f1)
+
+          # Update PKGBUILD with version and SHA256 sums
+          sed -i "s/__VERSION__/${VERSION}/" aur/PKGBUILD
+          sed -i "s/__PKGREL__/${PKGREL}/" aur/PKGBUILD
+          sed -i "s/__TARBALL_SHA__/${TARBALL_SHA}/" aur/PKGBUILD
+          sed -i "s/__SERVICE_SHA__/${SERVICE_SHA}/" aur/PKGBUILD
+          sed -i "s/__CONFIG_SHA__/${CONFIG_SHA}/" aur/PKGBUILD
+        env:
+          GITHUB_REF: ${{ github.ref }}
+      - name: Deploy to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v4.1.1
+        with:
+          pkgname: hyprlux
+          pkgbuild: ./aur/PKGBUILD
+          assets: ./aur/*
+          test: true
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: "Update to version ${{ github.ref_name }}"

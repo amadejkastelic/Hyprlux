@@ -1,9 +1,11 @@
-hyprlux: {
+hyprlux:
+{
   pkgs,
   lib,
   config,
   ...
-}: let
+}:
+let
   time = lib.types.strMatching ''^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'';
 
   nightLightSubmodule = lib.types.submodule {
@@ -15,12 +17,22 @@ hyprlux: {
       };
       latitude = lib.mkOption {
         description = "Your latitude";
-        type = with lib.types; nullOr (oneOf [int float]);
+        type =
+          with lib.types;
+          nullOr (oneOf [
+            int
+            float
+          ]);
         default = null;
       };
       longitude = lib.mkOption {
         description = "Your longitude";
-        type = with lib.types; nullOr (oneOf [int float]);
+        type =
+          with lib.types;
+          nullOr (oneOf [
+            int
+            float
+          ]);
         default = null;
       };
       start_time = lib.mkOption {
@@ -62,18 +74,17 @@ hyprlux: {
   };
 
   cfg = config.programs.hyprlux;
-  cfgFormat = pkgs.formats.toml {};
+  cfgFormat = pkgs.formats.toml { };
 
   pkg = hyprlux.packages.${pkgs.system}.default;
-in {
+in
+{
   options.programs.hyprlux = {
     enable = lib.mkEnableOption "Enable hyprlux";
 
-    package =
-      lib.mkPackageOption pkgs "hyprlux" {}
-      // {
-        default = pkg;
-      };
+    package = lib.mkPackageOption pkgs "hyprlux" { } // {
+      default = pkg;
+    };
 
     systemd.enable = lib.mkEnableOption "Use as a systemd service";
 
@@ -110,7 +121,7 @@ in {
     vibrance_configs = lib.mkOption {
       description = "List of vibrance configurations";
       type = lib.types.listOf vibranceSubmodule;
-      default = [];
+      default = [ ];
       example = [
         {
           window_class = "^(steam_app_)(.*)$";
@@ -133,39 +144,41 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable (lib.mkMerge [
-    {
-      home.packages = [cfg.package];
+  config = lib.mkIf cfg.enable (
+    lib.mkMerge [
+      {
+        home.packages = [ cfg.package ];
 
-      xdg.configFile."hypr/hyprlux.toml" = {
-        source = cfgFormat.generate "hyprlux.toml" {
-          night_light = lib.attrsets.filterAttrs (n: v: v != null) cfg.night_light;
-          vibrance_configs = cfg.vibrance_configs;
-          hot_reload = cfg.hot_reload;
+        xdg.configFile."hypr/hyprlux.toml" = {
+          source = cfgFormat.generate "hyprlux.toml" {
+            night_light = lib.attrsets.filterAttrs (n: v: v != null) cfg.night_light;
+            vibrance_configs = cfg.vibrance_configs;
+            hot_reload = cfg.hot_reload;
+          };
         };
-      };
-    }
+      }
 
-    (lib.mkIf cfg.systemd.enable {
-      systemd.user.services.hyprlux = {
-        Unit = {
-          Description = "Hyprlux shader manager service";
-          Documentation = "https://github.com/amadejkastelic/Hyprlux";
-          PartOf = ["graphical-session.target"];
-          After = ["graphical-session-pre.target"];
-        };
+      (lib.mkIf cfg.systemd.enable {
+        systemd.user.services.hyprlux = {
+          Unit = {
+            Description = "Hyprlux shader manager service";
+            Documentation = "https://github.com/amadejkastelic/Hyprlux";
+            PartOf = [ "graphical-session.target" ];
+            After = [ "graphical-session-pre.target" ];
+          };
 
-        Service = {
-          ExecStart = "${cfg.package}/bin/hyprlux";
-          ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR2 $MAINPID";
-          Restart = "on-failure";
-          KillMode = "mixed";
-        };
+          Service = {
+            ExecStart = "${cfg.package}/bin/hyprlux";
+            ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR2 $MAINPID";
+            Restart = "on-failure";
+            KillMode = "mixed";
+          };
 
-        Install = {
-          WantedBy = [cfg.systemd.target];
+          Install = {
+            WantedBy = [ cfg.systemd.target ];
+          };
         };
-      };
-    })
-  ]);
+      })
+    ]
+  );
 }

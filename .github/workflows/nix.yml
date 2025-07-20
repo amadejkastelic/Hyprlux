@@ -1,4 +1,4 @@
-name: nix
+name: CI
 
 on:
   push:
@@ -8,16 +8,12 @@ on:
 
 jobs:
   nix:
-    name: check
+    name: check and build
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out source repository
         uses: actions/checkout@v3
-      - name: Set up Alejandra
-        uses: luisnquin/setup-alejandra@v1.0.0
-      - name: Check formatting
-        run: alejandra --check .
       - name: Install nix action
         uses: cachix/install-nix-action@v20
         with:
@@ -26,5 +22,7 @@ jobs:
             auto-optimise-store = true
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
             experimental-features = nix-command flakes
-      - name: Flake check
-        run: nix flake check
+      - name: Flake check (includes tests, clippy, rustfmt)
+        run: nix flake check -L
+      - name: Build package
+        run: nix build

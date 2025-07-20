@@ -3,3 +3,4 @@ target/
 result/
 .direnv/
 .claude/settings.local.json
+.pre-commit-config.yaml

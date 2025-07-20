@@ -12,7 +12,9 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 fn main() -> hyprland::Result<()> {
-    colog::init();
+    env_logger::builder()
+        .filter_level(log::LevelFilter::Info)
+        .init();
 
     let config_path = config::path();
     let config_data = Arc::new(Mutex::new(load_config_and_shaders(&config_path)));

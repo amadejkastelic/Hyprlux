@@ -1,0 +1,39 @@
+# Maintainer: amadejk <amadejkastelic7@gmail.com>
+pkgname=hyprlux
+pkgver=__VERSION__
+pkgrel=__PKGREL__
+pkgdesc="Hyprland utility that automates vibrance and night light control"
+arch=('x86_64')
+url="https://github.com/amadejkastelic/Hyprlux"
+license=('MIT')
+depends=('hyprland')
+makedepends=('cargo' 'rust' 'git')
+install="install.sh"
+options=('!debug')
+source=(
+    "Hyprlux-${pkgver}.tar.gz::https://github.com/amadejkastelic/Hyprlux/archive/refs/tags/${pkgver}.tar.gz"
+    "hyprlux.service"
+    "config.toml"
+)
+sha256sums=(
+    '__TARBALL_SHA__'
+    '__SERVICE_SHA__'
+    '__CONFIG_SHA__'
+)
+
+build() {
+    cd "$srcdir/Hyprlux-${pkgver}"
+    RUSTUP_TOOLCHAIN=stable CARGO_TARGET_DIR=target cargo build --release
+}
+
+check() {
+    cd "$srcdir/Hyprlux-${pkgver}"
+    RUSTUP_TOOLCHAIN=stable cargo test
+}
+
+package() {
+    cd "$srcdir/Hyprlux-${pkgver}"
+    install -Dm755 "target/release/hyprlux" "$pkgdir/usr/bin/hyprlux"
+    install -Dm644 "$srcdir/hyprlux.service" "$pkgdir/usr/lib/systemd/system/hyprlux.service"
+    install -Dm644 "$srcdir/config.toml" "$pkgdir/usr/share/hyprlux/config.toml"
+}

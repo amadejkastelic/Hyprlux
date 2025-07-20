@@ -1,9 +1,11 @@
-hyprlux: {
+hyprlux:
+{
   pkgs,
   lib,
   config,
   ...
-}: let
+}:
+let
   time = lib.types.strMatching ''^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'';
 
   nightLightSubmodule = lib.types.submodule {
@@ -15,12 +17,22 @@ hyprlux: {
       };
       latitude = lib.mkOption {
         description = "Your latitude";
-        type = with lib.types; nullOr (oneOf [int float]);
+        type =
+          with lib.types;
+          nullOr (oneOf [
+            int
+            float
+          ]);
         default = null;
       };
       longitude = lib.mkOption {
         description = "Your longitude";
-        type = with lib.types; nullOr (oneOf [int float]);
+        type =
+          with lib.types;
+          nullOr (oneOf [
+            int
+            float
+          ]);
         default = null;
       };
       start_time = lib.mkOption {
@@ -62,18 +74,17 @@ hyprlux: {
   };
 
   cfg = config.programs.hyprlux;
-  cfgFormat = pkgs.formats.toml {};
+  cfgFormat = pkgs.formats.toml { };
 
   pkg = hyprlux.packages.${pkgs.system}.default;
-in {
+in
+{
   options.programs.hyprlux = {
     enable = lib.mkEnableOption "Enable hyprlux";
 
-    package =
-      lib.mkPackageOption pkgs "hyprlux" {}
-      // {
-        default = pkg;
-      };
+    package = lib.mkPackageOption pkgs "hyprlux" { } // {
+      default = pkg;
+    };
 
     night_light = lib.mkOption {
       type = nightLightSubmodule;
@@ -95,7 +106,7 @@ in {
     vibrance_configs = lib.mkOption {
       description = "List of vibrance configurations";
       type = lib.types.listOf vibranceSubmodule;
-      default = [];
+      default = [ ];
       example = [
         {
           window_class = "^(steam_app_)(.*)$";
