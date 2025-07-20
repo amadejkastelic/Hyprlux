@@ -7,7 +7,7 @@ arch=('x86_64')
 url="https://github.com/amadejkastelic/Hyprlux"
 license=('MIT')
 depends=('hyprland')
-makedepends=('cargo' 'rust' 'git')
+makedepends=('cargo')
 install="install.sh"
 options=('!debug')
 source=(
@@ -21,14 +21,19 @@ sha256sums=(
     '__CONFIG_SHA__'
 )
 
+prepare() {
+    cd "$srcdir/Hyprlux-${pkgver}"
+    cargo fetch --locked --target "$(rustc -vV | sed -n 's|host: ||p')"
+}
+
 build() {
     cd "$srcdir/Hyprlux-${pkgver}"
-    RUSTUP_TOOLCHAIN=stable CARGO_TARGET_DIR=target cargo build --release
+    cargo build --frozen --release --target-dir target
 }
 
 check() {
     cd "$srcdir/Hyprlux-${pkgver}"
-    RUSTUP_TOOLCHAIN=stable cargo test
+    cargo test --frozen --release
 }
 
 package() {
