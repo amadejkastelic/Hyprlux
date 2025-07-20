@@ -16,6 +16,5 @@ post_upgrade() {
 
 post_remove() {
 	rm /etc/hyprlux/config.toml
-    systemctl stop hyprlux.service
     systemctl disable --now hyprlux.service
 }
