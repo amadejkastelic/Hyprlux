@@ -19,5 +19,5 @@ jobs:
           CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
         run: |
           git remote add codeberg https://amadejkastelic:${CODEBERG_TOKEN}@codeberg.org/amadejkastelic/Hyprlux.git
-          git push codeberg main:main
+          git push -f codeberg main:main
           git push codeberg --tags
