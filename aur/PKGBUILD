@@ -39,6 +39,6 @@ check() {
 package() {
     cd "$srcdir/Hyprlux-${pkgver}"
     install -Dm755 "target/release/hyprlux" "$pkgdir/usr/bin/hyprlux"
-    install -Dm644 "$srcdir/hyprlux.service" "$pkgdir/usr/lib/systemd/system/hyprlux.service"
+    install -Dm644 "$srcdir/hyprlux.service" "$pkgdir/usr/lib/systemd/user/hyprlux.service"
     install -Dm644 "$srcdir/config.toml" "$pkgdir/usr/share/hyprlux/config.toml"
 }
