@@ -73,10 +73,17 @@ fn main() -> hyprland::Result<()> {
 
     // Event handler logic
     event_listener.add_active_window_changed_handler(move |data| {
-        let data = data.unwrap();
         let applied_shader = shader::get().unwrap_or("null".to_string());
         debug!("Current shader: {}", applied_shader);
         let mut shader_to_apply: Option<Box<dyn shader::Shader>> = None;
+
+        let (window_class, window_title) = match data {
+            Some(d) => (Some(d.class.to_string()), Some(d.title.to_string())),
+            None => {
+                debug!("No active window, evaluating shaders without window context");
+                (None, None)
+            }
+        };
 
         // Access the current config and shaders
         let config_data = config_data.lock().unwrap();
@@ -84,16 +91,14 @@ fn main() -> hyprland::Result<()> {
         // Should apply night light shader?
         if config_data.night_light_shader.is_some() {
             let shader = config_data.night_light_shader.clone().unwrap();
-            if shader.should_apply(Some(data.class.to_string()), Some(data.title.to_string())) {
+            if shader.should_apply(window_class.clone(), window_title.clone()) {
                 shader_to_apply = Some(Box::new(shader));
             }
         }
 
         // Should apply vibrance shader?
         for vibrance_shader in &config_data.vibrance_shaders {
-            if vibrance_shader
-                .should_apply(Some(data.class.to_string()), Some(data.title.to_string()))
-            {
+            if vibrance_shader.should_apply(window_class.clone(), window_title.clone()) {
                 shader_to_apply = Some(Box::new(vibrance_shader.clone()));
                 break;
             }
