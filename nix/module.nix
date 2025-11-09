@@ -76,7 +76,7 @@ let
   cfg = config.programs.hyprlux;
   cfgFormat = pkgs.formats.toml { };
 
-  pkg = hyprlux.packages.${pkgs.system}.default;
+  pkg = hyprlux.packages.${pkgs.stdenv.hostPlatform.system}.default;
 in
 {
   options.programs.hyprlux = {
